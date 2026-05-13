@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{catalogName}}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+  
+  @page { size: A4; margin: 0; }
+  body { font-family: 'Inter', sans-serif; color: #111; margin: 0; padding: 0; background: #fff; }
+  
+  .cover-page {
+    height: calc(100vh - 40mm);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    page-break-after: always;
+  }
+  .cover-title { font-size: 36px; font-weight: 300; text-transform: uppercase; letter-spacing: 2px; }
+  
+  .product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 30px;
+    padding: 20px;
+  }
+  .product-card { text-align: center; page-break-inside: avoid; }
+  .product-image { width: 100%; height: 200px; object-fit: cover; }
+  .product-name { margin: 10px 0 5px; font-size: 14px; font-weight: 600; text-transform: uppercase; }
+  .product-price { margin: 0; font-size: 14px; color: #555; }
+  .product-sku, .product-description { display: none; } /* minimal hides description */
+</style>
+</head>
+<body>
+  <div class="cover-page">
+    <h1 class="cover-title">{{catalogName}}</h1>
+  </div>
+  <div class="content-page">
+    {{productsHTML}}
+  </div>
+</body>
+</html>

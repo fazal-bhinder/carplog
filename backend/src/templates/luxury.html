@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{catalogName}}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+  
+  @page { size: A4; margin: 0; }
+  body { font-family: 'Playfair Display', serif; color: #fff; margin: 0; padding: 0; background: #1a1a1a; }
+  
+  .cover-page {
+    height: calc(100vh - 40mm);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+    page-break-after: always;
+  }
+  .cover-title { font-size: 56px; color: #d4af37; font-weight: 700; font-style: italic; text-align: center;}
+  
+  .product-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 40px;
+  }
+  .product-card {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    page-break-inside: avoid;
+    border-bottom: 1px solid #333;
+    padding-bottom: 40px;
+  }
+  .product-image { width: 50%; height: 350px; object-fit: cover; border: 2px solid #d4af37; }
+  .product-details { width: 50%; }
+  .product-name { font-size: 28px; color: #d4af37; margin: 0 0 10px; }
+  .product-price { font-size: 22px; color: #fff; margin: 0 0 15px; }
+  .product-description { font-size: 16px; color: #ccc; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <div class="cover-page">
+    <h1 class="cover-title">{{catalogName}}</h1>
+    <p style="color: #aaa; font-size: 20px; text-transform: uppercase; letter-spacing: 4px;">Exclusive Collection</p>
+  </div>
+  <div class="content-page">
+    {{productsHTML}}
+  </div>
+</body>
+</html>

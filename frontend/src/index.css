@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Brand accent — burnt orange */
+  --color-accent:         #C2692A;
+  --color-accent-hover:   #A85520;
+  --color-accent-light:   #FDF3EC;
+
+  /* Surfaces & backgrounds */
+  --color-bg:             #FAFAF8;
+  --color-surface:        #FFFFFF;
+  --color-surface-alt:    #F5F4F0;
+
+  /* Borders */
+  --color-border:         #E8E6E1;
+  --color-border-dark:    #D4D0C8;
+
+  /* Text */
+  --color-ink:            #1C1917;
+  --color-body:           #44403C;
+  --color-muted:          #78716C;
+
+  /* Status */
+  --color-success:        #3D7A5E;
+  --color-success-bg:     #EBF5F0;
+  --color-warning:        #B45309;
+  --color-warning-bg:     #FEF3C7;
+  --color-danger:         #B91C1C;
+  --color-danger-bg:      #FEF2F2;
+
+  /* Sidebar */
+  --color-sidebar:        #1C1917;
+  --color-sidebar-text:   #D6D3D1;
+  --color-sidebar-hover:  #292524;
+  --color-sidebar-active: #C2692A;
+
+  /* Font */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+/* ─────────────────────────────────────────────────────────
+   CSS custom props for use in non-Tailwind styles
+──────────────────────────────────────────────────────────── */
+:root {
+  --sidebar-w-expanded: 240px;
+  --sidebar-w-collapsed: 64px;
+  --sidebar-transition: 250ms ease;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-body);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Global input styles ── */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: var(--color-ink);
+    background: var(--color-surface);
+    transition: border-color 150ms, box-shadow 150ms;
+    width: 100%;
+    outline: none;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(194, 105, 42, 0.15);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+   KEYFRAMES
+──────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(64px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   UTILITY CLASSES
+──────────────────────────────────────────────────────────── */
+@layer utilities {
+  .page-enter {
+    animation: page-enter 200ms ease both;
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(90deg, #f0efec 25%, #e8e6e1 50%, #f0efec 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .toast-enter {
+    animation: slide-in-right 250ms ease both;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+   SIDEBAR CSS TOOLTIP (collapsed mode)
+──────────────────────────────────────────────────────────── */
+.sidebar-nav-item {
+  position: relative;
+}
+
+.sidebar-tooltip {
+  position: absolute;
+  left: 56px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1C1917;
+  border: 1px solid #292524;
+  color: #D6D3D1;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms;
+  z-index: 200;
+}
+
+.sidebar-nav-item:hover .sidebar-tooltip {
+  opacity: 1;
+}
+
+/* ─────────────────────────────────────────────────────────
+   CARD STAGGER ANIMATION
+──────────────────────────────────────────────────────────── */
+.card-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.card-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.card-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.card-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.card-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.card-stagger > *:nth-child(6) { animation-delay: 250ms; }
+.card-stagger > *:nth-child(n+7) { animation-delay: 300ms; }
+
+.card-animate {
+  animation: page-enter 250ms ease both;
+}
