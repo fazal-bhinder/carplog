@@ -81,19 +81,33 @@ exports.deleteProduct = async (req, res, next) => {
 
 exports.enhanceProductImage = async (req, res, next) => {
   try {
-    const product = await prisma.product.findUnique({ where: { id: parseInt(req.params.id) } });
-    if (!product || !product.imageUrl) return res.status(400).json({ success: false, error: 'Product or image not found' });
+    const { id } = req.params;
+    let product;
+    let name, description;
+
+    if (id && id !== 'enhance') { // Check if ID is present and not the string 'enhance'
+      product = await prisma.product.findUnique({ where: { id: parseInt(id) } });
+      if (!product) return res.status(404).json({ success: false, error: 'Product not found' });
+      name = product.name;
+      description = product.description;
+    } else {
+      // For unsaved products, use data from body
+      name = req.body.name || 'Luxurious Carpet';
+      description = req.body.description || '';
+      product = { name, description };
+    }
     
-    // Ensure the image URL is accessible by Replicate (it needs to be public, if local testing, this will fail unless exposed via ngrok)
-    // For this prototype, we'll assume the imageUrl passed is somehow accessible or we handle it gracefully.
+    const enhancedUrl = await upscaleImage(product);
+
+    // If it was an existing product, update it
+    if (product.id) {
+      await prisma.product.update({
+        where: { id: product.id },
+        data: { enhancedImageUrl: enhancedUrl, isEnhanced: true }
+      });
+    }
     
-    const enhancedUrl = await upscaleImage(product.imageUrl);
-    const updatedProduct = await prisma.product.update({
-      where: { id: product.id },
-      data: { enhancedImageUrl: enhancedUrl, isEnhanced: true }
-    });
-    
-    res.json({ success: true, data: updatedProduct });
+    res.json({ success: true, data: { imageUrl: enhancedUrl } });
   } catch (error) {
     next(error);
   }
@@ -101,9 +115,14 @@ exports.enhanceProductImage = async (req, res, next) => {
 
 exports.describeProductImage = async (req, res, next) => {
   try {
-    const product = await prisma.product.findUnique({ where: { id: parseInt(req.params.id) } });
-    // This can be used on unsaved products if imageUrl is passed in body, but prompt implies POST /products/:id/describe
-    let imageUrl = req.body.imageUrl || (product ? product.imageUrl : null);
+    const { id } = req.params;
+    let imageUrl = req.body.imageUrl;
+
+    if (!imageUrl && id && id !== 'describe') {
+      const product = await prisma.product.findUnique({ where: { id: parseInt(id) } });
+      imageUrl = product ? product.imageUrl : null;
+    }
+
     if (!imageUrl) return res.status(400).json({ success: false, error: 'No image URL provided' });
     
     // Convert to full URL if relative

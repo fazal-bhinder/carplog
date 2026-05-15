@@ -16,7 +16,7 @@ function buildProductsHTML(products) {
         <img src="${imgUrl}" alt="${p.name}" class="product-image" />
         <div class="product-details">
           <h3 class="product-name">${p.name}</h3>
-          <p class="product-price">$${price.toFixed(2)}</p>
+          <p class="product-price">₹${price.toFixed(2)}</p>
           <p class="product-sku">SKU: ${p.sku || 'N/A'}</p>
           <p class="product-description">${p.description || ''}</p>
         </div>
@@ -28,7 +28,7 @@ function buildProductsHTML(products) {
 }
 
 async function generateCatalogPDF(catalog) {
-  const templateName = catalog.template || 'standard';
+  const templateName = 'luxury-catalog-template';
   const templatePath = path.join(__dirname, '../templates', `${templateName}.html`);
   
   if (!fs.existsSync(templatePath)) {
@@ -37,29 +37,74 @@ async function generateCatalogPDF(catalog) {
   
   let html = fs.readFileSync(templatePath, 'utf8');
 
-  // Inject data
-  html = html.replace(/{{catalogName}}/g, catalog.name || 'Catalog');
-  html = html.replace('{{productsHTML}}', buildProductsHTML(catalog.products));
+  if (templateName === 'luxury-catalog-template') {
+    const templateData = {
+      name: catalog.name,
+      shop: {
+        shopName: "Carpet Story", shopPhone: "+91 9602492022",
+        shopEmail: "gargaashrit@gmail.com", shopInstagram: "@carpetstory",
+        shopWebsite: "carpetstory.co"
+      },
+      products: catalog.products.map(cp => {
+        const p = cp.product;
+        return {
+          name: p.name,
+          sku: p.sku || p.name,
+          price: cp.customPrice || p.price,
+          description: p.description || '',
+          imageUrl: p.imageUrl,
+          enhancedImageUrl: p.enhancedImageUrl,
+          colorSwatches: ["#F5F0E8","#C9A84C","#6B3A3A","#3D0C11"],
+          category: { name: p.category ? p.category.name : 'Uncategorized' },
+          dimensions: "90 × 120 cm"
+        };
+      })
+    };
+    
+    const injectedScript = `<script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const realData = ${JSON.stringify(templateData)};
+        document.getElementById('zone2').innerHTML = '';
+        document.getElementById('zone3').innerHTML = '';
+        if (typeof buildCatalog === 'function') {
+          buildCatalog(realData);
+        }
+      });
+    </script>`;
+    html = html.replace('</body>', `${injectedScript}</body>`);
+    html = html.replace('buildCatalog(sampleCatalog);', '');
+  } else {
+    // Inject data for legacy templates
+    html = html.replace(/{{catalogName}}/g, catalog.name || 'Catalog');
+    html = html.replace('{{productsHTML}}', buildProductsHTML(catalog.products));
+  }
 
   const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
   const page = await browser.newPage();
   
-  // Intercept requests if needed or just wait for network idle
+  const isLandscape = templateName === 'luxury-catalog-template';
+  
   await page.setContent(html, { waitUntil: 'networkidle0' });
   
-  const pdf = await page.pdf({
+  const pdfOptions = {
     format: 'A4',
+    landscape: isLandscape,
     printBackground: true,
-    displayHeaderFooter: true,
-    headerTemplate: '<div></div>',
-    footerTemplate: `
+    displayHeaderFooter: !isLandscape,
+    margin: isLandscape ? { top: 0, bottom: 0, left: 0, right: 0 } : { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' }
+  };
+  
+  if (!isLandscape) {
+    pdfOptions.headerTemplate = '<div></div>';
+    pdfOptions.footerTemplate = `
       <div style="width: 100%; font-size: 10px; padding: 0 15mm; display: flex; justify-content: space-between; font-family: Helvetica, sans-serif;">
         <span style="color: #6B7280;">${catalog.name || 'Catalog'}</span>
         <span style="color: #6B7280;">Page <span class="pageNumber"></span></span>
       </div>
-    `,
-    margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' }
-  });
+    `;
+  }
+  
+  const pdf = await page.pdf(pdfOptions);
   
   await browser.close();
   return pdf;

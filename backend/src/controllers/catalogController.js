@@ -18,7 +18,11 @@ exports.getCatalog = async (req, res, next) => {
       where: { id: parseInt(req.params.id) },
       include: {
         products: {
-          include: { product: true },
+          include: { 
+            product: {
+              include: { category: true }
+            }
+          },
           orderBy: { sortOrder: 'asc' }
         }
       }
@@ -34,7 +38,7 @@ exports.createCatalog = async (req, res, next) => {
   try {
     const { name, status, template } = req.body;
     const catalog = await prisma.catalog.create({
-      data: { name, status: status || 'draft', template: template || 'standard' }
+      data: { name, status: status || 'draft', template: template || 'luxury' }
     });
     res.status(201).json({ success: true, data: catalog });
   } catch (error) {
@@ -101,7 +105,11 @@ exports.generatePDF = async (req, res, next) => {
       where: { id: parseInt(req.params.id) },
       include: {
         products: {
-          include: { product: true },
+          include: { 
+            product: {
+              include: { category: true }
+            }
+          },
           orderBy: { sortOrder: 'asc' }
         }
       }

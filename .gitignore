@@ -1,0 +1,18 @@
+# Node
+node_modules/
+dist/
+build/
+.env
+
+# Uploads (User generated content should not be in Git)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*

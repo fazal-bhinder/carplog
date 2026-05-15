@@ -8,6 +8,8 @@ router.post('/', productController.createProduct);
 router.put('/:id', productController.updateProduct);
 router.delete('/:id', productController.deleteProduct);
 
+router.post('/enhance', productController.enhanceProductImage);
+router.post('/describe', productController.describeProductImage);
 router.post('/:id/enhance', productController.enhanceProductImage);
 router.post('/:id/describe', productController.describeProductImage);
 

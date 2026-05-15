@@ -100,35 +100,8 @@ const CatalogDetail = () => {
   const activeTemplate = optimisticTemplate ?? catalog.template;
 
   const templatePreviews = {
-    standard: (
-      <svg viewBox="0 0 120 168" className="w-full" xmlns="http://www.w3.org/2000/svg">
-        <rect width="120" height="168" fill="#f9fafb" rx="4"/>
-        <rect x="8" y="8" width="104" height="14" fill="#C2692A" rx="2"/>
-        <rect x="20" y="11" width="60" height="6" fill="white" rx="1" opacity="0.8"/>
-        <rect x="8" y="28" width="49" height="56" fill="#e5e7eb" rx="2"/>
-        <rect x="8" y="86" width="49" height="5" fill="#1C1917" rx="1"/>
-        <rect x="8" y="93" width="30" height="4" fill="#C2692A" rx="1"/>
-        <rect x="63" y="28" width="49" height="56" fill="#d1d5db" rx="2"/>
-        <rect x="63" y="86" width="49" height="5" fill="#1C1917" rx="1"/>
-        <rect x="63" y="93" width="30" height="4" fill="#C2692A" rx="1"/>
-        <rect x="8" y="155" width="104" height="1" fill="#e5e7eb"/>
-      </svg>
-    ),
-    minimal: (
-      <svg viewBox="0 0 120 168" className="w-full" xmlns="http://www.w3.org/2000/svg">
-        <rect width="120" height="168" fill="#ffffff" rx="4"/>
-        <rect x="8" y="10" width="104" height="1" fill="#e5e7eb"/>
-        <rect x="35" y="5" width="50" height="6" fill="#111827" rx="1"/>
-        <rect x="8" y="18" width="31" height="38" fill="#f3f4f6" rx="1"/>
-        <rect x="45" y="18" width="31" height="38" fill="#e5e7eb" rx="1"/>
-        <rect x="82" y="18" width="31" height="38" fill="#d1d5db" rx="1"/>
-        <rect x="8" y="76" width="31" height="38" fill="#e5e7eb" rx="1"/>
-        <rect x="45" y="76" width="31" height="38" fill="#f3f4f6" rx="1"/>
-        <rect x="82" y="76" width="31" height="38" fill="#d1d5db" rx="1"/>
-      </svg>
-    ),
-    luxury: (
-      <svg viewBox="0 0 120 168" className="w-full" xmlns="http://www.w3.org/2000/svg">
+    'luxury-catalog-template': (
+     <svg viewBox="0 0 120 168" className="w-full" xmlns="http://www.w3.org/2000/svg">
         <rect width="120" height="168" fill="#111827" rx="4"/>
         <rect x="0" y="0" width="120" height="50" fill="#000000" rx="4"/>
         <rect x="25" y="14" width="70" height="10" fill="#C2692A" rx="1"/>
@@ -193,7 +166,7 @@ const CatalogDetail = () => {
             <p className="text-sm text-muted pl-7">Template: <span className="font-medium text-body capitalize">{catalog.template}</span></p>
           </div>
 
-          <Button onClick={handleGeneratePDF} isLoading={isGeneratingPDF}>
+          <Button className="cursor-pointer" onClick={handleGeneratePDF} isLoading={isGeneratingPDF}>
             <Download className="w-4 h-4" /> Generate PDF
           </Button>
         </div>
@@ -256,7 +229,7 @@ const CatalogDetail = () => {
                       <div className="flex items-center justify-between border-t border-border pt-3">
                         <span className="text-xs text-muted">Price</span>
                         <div className="flex items-center gap-1">
-                          <span className="text-muted text-xs">$</span>
+                          <span className="text-muted text-xs">₹</span>
                           <input
                             type="number"
                             className="w-18 text-right font-bold text-accent text-sm bg-transparent border-0 shadow-none focus:ring-0 p-0"
@@ -282,9 +255,7 @@ const CatalogDetail = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 {[
-                  { id: 'standard', label: 'Standard', desc: '2-column grid, full details' },
-                  { id: 'minimal',  label: 'Minimal',  desc: '3-column, clean image grid' },
-                  { id: 'luxury',   label: 'Luxury',   desc: 'Dark editorial, gold accents' },
+                  { id: 'luxury-catalog-template', label: 'Carpet Story', desc: 'Premium editorial layout' },
                 ].map(({ id: t, label, desc }) => {
                   const active = activeTemplate === t;
                   return (
@@ -365,7 +336,7 @@ const CatalogDetail = () => {
                       Adding…
                     </span>
                   ) : (
-                    <Button onClick={() => handleAddProduct(product.id)} className="text-xs py-1 px-3 h-auto">
+                    <Button onClick={() => handleAddProduct(product.id)} className="text-xs py-1 px-3 h-auto cursor-pointer">
                       Add
                     </Button>
                   )}

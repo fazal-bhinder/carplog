@@ -79,7 +79,11 @@ const AddProduct = () => {
     if (!imageUrl) return;
     setIsEnhancingImage(true);
     try {
-      const res = await api.post('/products/enhance', { imageUrl });
+      const res = await api.post('/products/enhance', { 
+        imageUrl,
+        name: watchName,
+        description: watchDesc
+      });
       setImageUrl(res.data.data.imageUrl);
     } catch {
       console.error('Image enhancement failed');

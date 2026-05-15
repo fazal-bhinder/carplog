@@ -1,32 +1,46 @@
-const Anthropic = require('@anthropic-ai/sdk');
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// Initialize with Gemini API Key
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function generateCarpetDescription(imageUrl) {
   try {
-    const imageBuffer = await fetch(imageUrl).then(r => r.arrayBuffer());
-    const base64 = Buffer.from(imageBuffer).toString('base64');
-    const ext = imageUrl.split('.').pop().toLowerCase();
-    const mediaType = ext === 'png' ? 'image/png' : 'image/jpeg';
+    // Handle local/relative URLs
+    let fullUrl = imageUrl;
+    if (imageUrl.startsWith('/')) {
+      fullUrl = `http://localhost:5001${imageUrl}`;
+    }
 
-    const response = await client.messages.create({
-      model: 'claude-3-5-sonnet-20240620',
-      max_tokens: 500,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-          { type: 'text', text: `You are a carpet product expert writing for a retail catalog.
+    const imageResponse = await fetch(fullUrl);
+    const buffer = await imageResponse.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+    
+    // Determine mime type
+    const ext = imageUrl.split('.').pop().toLowerCase();
+    const mimeType = (ext === 'png') ? 'image/png' : 'image/jpeg';
+
+    console.log(`Generating description for image via Google Gemini (gemini-1.5-flash)...`);
+
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    const prompt = `You are a luxury carpet product expert writing for a high-end retail catalog.
 Analyze this carpet image and write a compelling product description.
-Include: pattern style, dominant colors, texture feel, likely material,
-ideal room placement (living room / bedroom / hallway etc.), and a
-2-sentence persuasive sales pitch. Keep total response under 120 words.
-Return only the description text, no headings or labels.` }
-        ]
-      }]
-    });
-    return response.content[0].text;
+Include: pattern style, dominant colors, texture feel, likely material, ideal room placement (living room / bedroom / hallway etc.), and a 2-sentence persuasive sales pitch. Keep total response under 120 words. Return only the description text, no headings or labels.`;
+
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: base64,
+          mimeType: mimeType,
+        },
+      },
+    ]);
+
+    const response = await result.response;
+    return response.text();
   } catch (error) {
-    console.error('Error generating description:', error);
+    console.error('Error generating description with Gemini:', error);
     throw new Error('Failed to generate description');
   }
 }

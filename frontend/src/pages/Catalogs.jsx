@@ -106,9 +106,7 @@ const Catalogs = () => {
           <div>
             <label className="block text-sm font-medium text-ink mb-1.5">Template</label>
             <select {...register('template')}>
-              <option value="standard">Standard</option>
-              <option value="minimal">Minimal</option>
-              <option value="luxury">Luxury</option>
+              <option value="luxury-catalog-template">Carpet Story</option>
             </select>
           </div>
           <div className="flex justify-end gap-3 pt-2 border-t border-border">
