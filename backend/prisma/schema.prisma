@@ -20,9 +20,12 @@ model Product {
   name             String
   description      String?
   sku              String?          @unique
-  price            Float
+  price            Float?
   offerPrice       Float?
+  dimensions       String?
+  material         String?
   imageUrl         String?
+  thumbnailUrl     String?
   enhancedImageUrl String?
   isEnhanced       Boolean          @default(false)
   categoryId       Int?

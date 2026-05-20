@@ -16,8 +16,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded images statically
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve uploaded images statically with aggressive caching
+// (filenames include timestamps so they're effectively immutable)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '1y',
+  immutable: true,
+}));
 
 // API Routes
 app.use('/api/products', productsRouter);

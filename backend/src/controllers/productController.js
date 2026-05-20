@@ -31,16 +31,19 @@ exports.getProduct = async (req, res, next) => {
 
 exports.createProduct = async (req, res, next) => {
   try {
-    const { name, description, sku, price, offerPrice, categoryId, imageUrl } = req.body;
+    const { name, description, sku, price, offerPrice, categoryId, imageUrl, thumbnailUrl, dimensions, material } = req.body;
     const product = await prisma.product.create({
       data: {
         name,
         description,
         sku,
-        price: parseFloat(price),
+        price: price ? parseFloat(price) : null,
         offerPrice: offerPrice ? parseFloat(offerPrice) : null,
+        dimensions,
+        material,
         categoryId: categoryId ? parseInt(categoryId) : null,
-        imageUrl
+        imageUrl,
+        thumbnailUrl
       }
     });
     res.status(201).json({ success: true, data: product });
@@ -51,17 +54,20 @@ exports.createProduct = async (req, res, next) => {
 
 exports.updateProduct = async (req, res, next) => {
   try {
-    const { name, description, sku, price, offerPrice, categoryId, imageUrl } = req.body;
+    const { name, description, sku, price, offerPrice, categoryId, imageUrl, thumbnailUrl, dimensions, material } = req.body;
     const product = await prisma.product.update({
       where: { id: parseInt(req.params.id) },
       data: {
         name,
         description,
         sku,
-        price: price ? parseFloat(price) : undefined,
+        price: price ? parseFloat(price) : null,
         offerPrice: offerPrice ? parseFloat(offerPrice) : null,
+        dimensions,
+        material,
         categoryId: categoryId ? parseInt(categoryId) : null,
-        imageUrl
+        imageUrl,
+        thumbnailUrl
       }
     });
     res.json({ success: true, data: product });

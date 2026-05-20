@@ -331,7 +331,9 @@ body {
 .cat-intro-right img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 40px;
+  box-sizing: border-box;
   opacity: 0.75;
 }
 .cat-intro-right::after {
@@ -353,7 +355,9 @@ body {
 .feature-img img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 40px;
+  box-sizing: border-box;
   display: block;
 }
 .feature-img .img-placeholder {
@@ -372,6 +376,34 @@ body {
   justify-content: center;
   background: #fff;
   position: relative;
+}
+.feature.feature-full {
+  background: var(--dark);
+}
+.feature.feature-full .feature-img {
+  width: 100%;
+}
+.feature.feature-full .feature-detail {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+  color: #fff;
+  padding: 80px 48px 40px 48px;
+}
+.feature.feature-full .feature-detail .prod-name,
+.feature.feature-full .feature-detail .prod-price,
+.feature.feature-full .feature-detail .seq-num,
+.feature.feature-full .feature-detail .prod-dims {
+  color: #fff !important;
+}
+.feature.feature-full .feature-detail .rule {
+  display: none;
+}
+.feature.feature-full .feature-detail .page-footer {
+  color: rgba(255,255,255,0.7);
 }
 .feature-detail .seq-num {
   font-family: 'Jost', sans-serif;
@@ -447,21 +479,24 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 44px 44px 36px 44px;
+  padding: 0 12px 6px 12px;
   position: relative;
 }
 .grid-col + .grid-col {
   border-left: 1px solid #F0EDE8;
 }
 .grid-col .top-logo {
-  margin-bottom: 20px;
+  margin-bottom: 0;
   color: var(--accent);
+  display: none;
 }
 .grid-img {
   width: 100%;
   flex: 1;
   min-height: 0;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 0;
+  box-sizing: border-box;
   border-radius: 2px;
   display: block;
 }
@@ -478,21 +513,22 @@ body {
   font-size: 10px;
   letter-spacing: 0.08em;
   color: var(--muted);
-  margin-top: 14px;
+  margin-top: 4px;
+  display: none;
 }
 .grid-col .prod-dims {
   font-family: 'Jost', sans-serif;
   font-weight: 300;
   font-size: 11px;
   color: var(--muted);
-  margin-top: 4px;
+  margin-top: 1px;
 }
 .grid-col .prod-price {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 400;
-  font-size: 24px;
+  font-size: 20px;
   color: var(--accent);
-  margin-top: 10px;
+  margin-top: 2px;
 }
 
 
@@ -702,25 +738,7 @@ body {
   </div>
 </div>
 
-<!-- PAGE 6 ── THE PROCESS -->
-<div class="page process">
-  <div class="process-header">
-    <h2>The Intricate Rug Weaving Process</h2>
-    <div class="logo-sm">
-      <svg viewBox="0 0 572 444" style="width:100%;height:100%;"><use href="#carpet-logo-dark"/></svg>
-    </div>
-  </div>
-  <div class="process-grid">
-    <div class="proc-step"><div class="proc-img"></div><div class="proc-lbl">RAW WOOL</div></div>
-    <div class="proc-step"><div class="proc-img"></div><div class="proc-lbl">SCOURING</div></div>
-    <div class="proc-step"><div class="proc-img"></div><div class="proc-lbl">SPINNING</div></div>
-    <div class="proc-step"><div class="proc-img"></div><div class="proc-lbl">YARN DYEING</div></div>
-    <div class="proc-step"><div class="proc-img"></div><div class="proc-lbl">YARN OPENING</div></div>
-    <div class="proc-step"><div class="proc-img"></div><div class="proc-lbl">DESIGNING</div></div>
-    <div class="proc-step"><div class="proc-img"></div><div class="proc-lbl">WEAVING</div></div>
-    <div class="proc-step"><div class="proc-img"></div><div class="proc-lbl">WASHING</div></div>
-  </div>
-</div>
+
 
 </div><!-- /zone1 -->
 
@@ -751,6 +769,7 @@ const MOOD_PHRASES = [
 ];
 
 function fmtPrice(p) {
+  if (!p) return '';
   return '₹' + Number(p).toLocaleString('en-IN');
 }
 
@@ -775,16 +794,19 @@ function pageB(prod, catName, pageNum, seqNum) {
     ? `<img src="${imgSrc}" alt="${prod.name}" loading="eager">`
     : `<div class="img-placeholder"></div>`;
 
-  return `<div class="page feature">
+  const hasDesc = !!prod.description;
+  const featureClass = hasDesc ? "page feature" : "page feature feature-full";
+
+  return `<div class="${featureClass}">
     <div class="feature-img">${imgHTML}</div>
     <div class="feature-detail">
       <div style="position:absolute; top:24px; right:48px; color:var(--accent)">${logo(16)}</div>
       <div class="seq-num" style="margin-top:auto">${seqNum}</div>
       <div class="prod-name">${prod.name}</div>
-      <div class="prod-dims">${prod.dimensions || ''}</div>
+      ${prod.dimensions ? `<div class="prod-dims">${prod.dimensions}</div>` : ''}
       <div class="rule"></div>
       <div class="prod-desc">${prod.description || ''}</div>
-      <div class="prod-price">${fmtPrice(prod.price)}</div>
+      ${prod.price ? `<div class="prod-price">${fmtPrice(prod.price)}</div>` : ''}
       <div class="page-footer">${catName.toUpperCase()} — PAGE ${pageNum}</div>
     </div>
   </div>`;
@@ -808,8 +830,9 @@ function pageGrid(products, pageNum, seqNums, expectedCols) {
       <div class="top-logo">${logo(16)}</div>
       ${imgHTML}
       <div class="prod-num">${seqNum}</div>
-      <div class="prod-dims">${prod.dimensions || ''}</div>
-      <div class="prod-price" ${priceStyle}>${fmtPrice(prod.price)}</div>
+      <div class="prod-grid-name" style="font-family:'Cormorant Garamond',serif; font-size:14px; margin: 2px 0 0px; color:var(--text);">${prod.name}</div>
+      ${prod.dimensions ? `<div class="prod-dims" style="margin-bottom:0px; font-size: 10px;">${prod.dimensions}</div>` : ''}
+      ${prod.price ? `<div class="prod-price" ${priceStyle}>${fmtPrice(prod.price)}</div>` : ''}
     </div>`;
   }
 
@@ -887,13 +910,9 @@ function buildCatalog(catalogData) {
     html += pageB(products[0], catName === 'Uncategorized' ? 'Collection' : catName, pageNum, seqNum);
     pageNum++; seqNum++; totalShown++;
 
-    if (totalShown > 0 && totalShown % 4 === 0) {
-      html += pageD(moodIdx++); pageNum++;
-    }
-
-    // Remaining products with dynamic chunking [2, 3, 1]
+    // Remaining products with dynamic chunking [2, 2, 1]
     const rest = products.slice(1);
-    const pattern = [2, 3, 1];
+    const pattern = [2, 2, 1];
     let patIdx = 0;
 
     let i = 0;
@@ -902,24 +921,25 @@ function buildCatalog(catalogData) {
       patIdx++;
 
       const chunk = rest.slice(i, i + chunkSize);
+      const actualSize = chunk.length;
       const nums = chunk.map((_, idx) => seqNum + idx);
 
-      if (chunkSize === 1) {
+      if (actualSize === 1) {
         html += pageB(chunk[0], catName === 'Uncategorized' ? 'Collection' : catName, pageNum, seqNum);
       } else {
-        html += pageGrid(chunk, pageNum, nums, chunkSize);
+        html += pageGrid(chunk, pageNum, nums, actualSize);
       }
 
       seqNum += chunk.length;
       totalShown += chunk.length;
       pageNum++;
 
-      if (totalShown > 0 && totalShown % 4 === 0) {
-        html += pageD(moodIdx++); pageNum++;
-      }
       i += chunkSize;
     }
   });
+
+  // Timeless Elegance page right before Contact Us
+  html += pageD(moodIdx); pageNum++;
 
   document.getElementById('zone2').innerHTML = html;
   document.getElementById('zone3').innerHTML = buildZone3(shop);

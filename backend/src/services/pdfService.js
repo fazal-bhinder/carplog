@@ -8,8 +8,8 @@ function buildProductsHTML(products) {
   let html = '<div class="product-grid">';
   products.forEach(cp => {
     const p = cp.product;
-    // ensure absolute url or data URI for images in puppeteer, assuming imageUrl is absolute
-    const imgUrl = p.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image';
+    let imgUrl = p.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image';
+    if (imgUrl.startsWith('/')) imgUrl = `http://localhost:5001${imgUrl}`;
     const price = cp.customPrice || p.price;
     html += `
       <div class="product-card">
@@ -52,11 +52,11 @@ async function generateCatalogPDF(catalog) {
           sku: p.sku || p.name,
           price: cp.customPrice || p.price,
           description: p.description || '',
-          imageUrl: p.imageUrl,
-          enhancedImageUrl: p.enhancedImageUrl,
+          imageUrl: p.imageUrl ? (p.imageUrl.startsWith('/') ? `http://localhost:5001${p.imageUrl}` : p.imageUrl) : null,
+          enhancedImageUrl: p.enhancedImageUrl ? (p.enhancedImageUrl.startsWith('/') ? `http://localhost:5001${p.enhancedImageUrl}` : p.enhancedImageUrl) : null,
           colorSwatches: ["#F5F0E8","#C9A84C","#6B3A3A","#3D0C11"],
           category: { name: p.category ? p.category.name : 'Uncategorized' },
-          dimensions: "90 × 120 cm"
+          dimensions: p.dimensions || ''
         };
       })
     };
@@ -79,17 +79,22 @@ async function generateCatalogPDF(catalog) {
     html = html.replace('{{productsHTML}}', buildProductsHTML(catalog.products));
   }
 
-  const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] });
   const page = await browser.newPage();
   
+  // Disable timeouts entirely for massive PDFs
+  page.setDefaultNavigationTimeout(0);
+  page.setDefaultTimeout(0);
+
   const isLandscape = templateName === 'luxury-catalog-template';
   
-  await page.setContent(html, { waitUntil: 'networkidle0' });
+  await page.setContent(html, { waitUntil: 'networkidle2', timeout: 0 });
   
   const pdfOptions = {
     format: 'A4',
     landscape: isLandscape,
     printBackground: true,
+    timeout: 0,
     displayHeaderFooter: !isLandscape,
     margin: isLandscape ? { top: 0, bottom: 0, left: 0, right: 0 } : { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' }
   };
