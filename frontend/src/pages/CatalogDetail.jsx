@@ -207,11 +207,13 @@ const CatalogDetail = () => {
                 {catalog.products.map((cp) => (
                   <div key={cp.id} className="card-animate bg-surface border border-border rounded-xl overflow-hidden group">
                     <div className="h-44 bg-surface-alt relative overflow-hidden">
-                      {cp.product.imageUrl ? (
+                      {(cp.product.thumbnailUrl || cp.product.imageUrl) ? (
                         <img
-                          src={cp.product.imageUrl.startsWith('http') ? cp.product.imageUrl : `http://localhost:5001${cp.product.imageUrl}`}
+                          src={(cp.product.thumbnailUrl || cp.product.imageUrl).startsWith('http') ? (cp.product.thumbnailUrl || cp.product.imageUrl) : `http://localhost:5001${cp.product.thumbnailUrl || cp.product.imageUrl}`}
                           alt={cp.product.name}
                           className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-sm text-muted">No Image</div>
@@ -312,11 +314,13 @@ const CatalogDetail = () => {
                 <div key={product.id}
                   className="flex items-center gap-3 p-3 border border-border rounded-xl bg-surface hover:bg-surface-alt transition-colors">
                   <div className="w-11 h-11 rounded-lg bg-surface-alt overflow-hidden flex-shrink-0">
-                    {product.imageUrl ? (
+                    {(product.thumbnailUrl || product.imageUrl) ? (
                       <img
-                        src={product.imageUrl.startsWith('http') ? product.imageUrl : `http://localhost:5001${product.imageUrl}`}
+                        src={(product.thumbnailUrl || product.imageUrl).startsWith('http') ? (product.thumbnailUrl || product.imageUrl) : `http://localhost:5001${product.thumbnailUrl || product.imageUrl}`}
                         alt={product.name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-[10px] text-muted">No img</div>

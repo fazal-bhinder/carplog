@@ -9,6 +9,15 @@ import { SkeletonCard } from '../components/ui/Skeleton';
 import { Sparkles, UploadCloud, X, ImageIcon, Plus } from 'lucide-react';
 import api from '../services/api';
 
+/**
+ * Returns the display URL for an image path.
+ * Prepends localhost origin for relative paths.
+ */
+function resolveUrl(url) {
+  if (!url) return '';
+  return url.startsWith('http') ? url : `http://localhost:5001${url}`;
+}
+
 const AddProduct = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -23,7 +32,9 @@ const AddProduct = () => {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
 
   const [imageUrl, setImageUrl] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
   const [isEnhancingImage, setIsEnhancingImage] = useState(false);
 
@@ -41,6 +52,7 @@ const AddProduct = () => {
       setValue('dimensions', product.dimensions);
       setValue('categoryId', product.categoryId);
       if (product.imageUrl) setImageUrl(product.imageUrl);
+      if (product.thumbnailUrl) setThumbnailUrl(product.thumbnailUrl);
     }
   }, [product, isEdit, setValue]);
 
@@ -48,17 +60,26 @@ const AddProduct = () => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
+    setUploadProgress(0);
     try {
       const formData = new FormData();
       formData.append('image', file);
       const res = await api.post('/upload/image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120000, // 2 min timeout for large files
+        onUploadProgress: (progressEvent) => {
+          const pct = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(pct);
+        },
       });
+      // Use optimized URL for storage (PDF), thumbnail for UI
       setImageUrl(res.data.data.imageUrl);
+      setThumbnailUrl(res.data.data.thumbnailUrl || res.data.data.imageUrl);
     } catch (err) {
       console.error('Upload error', err);
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -95,9 +116,10 @@ const AddProduct = () => {
   const onSubmit = (data) => {
     const payload = {
       ...data,
-      price: parseFloat(data.price),
+      price: data.price ? parseFloat(data.price) : null,
       categoryId: data.categoryId ? parseInt(data.categoryId) : undefined,
       imageUrl: imageUrl || undefined,
+      thumbnailUrl: thumbnailUrl || undefined,
     };
     if (isEdit) {
       updateProduct.mutate({ id, data: payload }, { onSuccess: () => navigate('/products') });
@@ -105,6 +127,9 @@ const AddProduct = () => {
       createProduct.mutate(payload, { onSuccess: () => navigate('/products') });
     }
   };
+
+  // Pick the best URL for display: thumbnail first, then imageUrl
+  const displayUrl = thumbnailUrl || imageUrl;
 
   if (isEdit && productLoading) return (
     <div className="max-w-6xl mx-auto">
@@ -154,8 +179,8 @@ const AddProduct = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1.5">Price (INR) <span className="text-danger">*</span></label>
-                  <input type="number" step="0.01" {...register('price', { required: 'Price is required' })} placeholder="299.00" />
+                  <label className="block text-sm font-medium text-ink mb-1.5">Price (INR)</label>
+                  <input type="number" step="0.01" {...register('price')} placeholder="299.00" />
                   {errors.price && <p className="text-danger text-xs mt-1">{errors.price.message}</p>}
                 </div>
 
@@ -203,18 +228,23 @@ const AddProduct = () => {
               <h2 className="font-semibold text-ink mb-4">Photos & AI Tools</h2>
 
               {/* Upload zone */}
-              {!imageUrl ? (
+              {!displayUrl ? (
                 <label
                   className={`relative flex flex-col items-center justify-center h-56 border-2 border-dashed rounded-xl cursor-pointer transition-colors hover:border-accent hover:bg-accent-light/30 ${isUploading ? 'border-accent bg-accent-light/30' : 'border-border'}`}
                 >
                   <input type="file" accept="image/jpeg,image/png,image/jpg" className="sr-only" onChange={handleImageUpload} />
                   {isUploading ? (
-                    <span className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                      {uploadProgress > 0 && (
+                        <span className="text-xs text-muted">{uploadProgress}%</span>
+                      )}
+                    </div>
                   ) : (
                     <>
                       <UploadCloud className="w-8 h-8 text-muted mb-2" />
                       <p className="text-sm font-medium text-body">Click to upload photo</p>
-                      <p className="text-xs text-muted mt-1">JPG, PNG — 4MB max</p>
+                      <p className="text-xs text-muted mt-1">JPG, PNG — 50MB max</p>
                     </>
                   )}
                 </label>
@@ -222,13 +252,14 @@ const AddProduct = () => {
                 <div className="space-y-4">
                   <div className="relative rounded-xl overflow-hidden border border-border aspect-square">
                     <img
-                      src={imageUrl.startsWith('http') ? imageUrl : `http://localhost:5001${imageUrl}`}
+                      src={resolveUrl(displayUrl)}
                       alt="Product"
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                     <button
                       type="button"
-                      onClick={() => setImageUrl('')}
+                      onClick={() => { setImageUrl(''); setThumbnailUrl(''); }}
                       className="absolute top-2 right-2 bg-surface/90 p-1.5 rounded-lg text-danger hover:bg-danger-bg shadow-sm transition-colors"
                     >
                       <X className="w-4 h-4" />
@@ -281,11 +312,12 @@ const AddProduct = () => {
               <div className="flex-1 p-4 bg-surface-alt flex items-center justify-center">
                 <div className="bg-surface w-[220px] shadow-md rounded border border-border flex flex-col">
                   <div className="h-[220px] bg-surface-alt w-full flex items-center justify-center overflow-hidden rounded-t">
-                    {imageUrl ? (
+                    {displayUrl ? (
                       <img
-                        src={imageUrl.startsWith('http') ? imageUrl : `http://localhost:5001${imageUrl}`}
+                        src={resolveUrl(displayUrl)}
                         alt="Preview"
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     ) : (
                       <ImageIcon className="w-8 h-8 text-border" />
@@ -295,9 +327,11 @@ const AddProduct = () => {
                     <h4 className="font-bold text-ink text-[13px] leading-tight line-clamp-2">
                       {watchName || 'Product Name'}
                     </h4>
-                    <div className="font-bold text-accent text-[13px]">
-                      ₹{parseFloat(watchPrice || 0).toFixed(2)}
-                    </div>
+                    {watchPrice ? (
+                      <div className="font-bold text-accent text-[13px]">
+                        ₹{parseFloat(watchPrice).toFixed(2)}
+                      </div>
+                    ) : null}
                     <p className="text-[10px] text-muted line-clamp-3 leading-relaxed">{watchDesc}</p>
                   </div>
                   <div className="px-3 py-1.5 border-t border-border flex justify-between">

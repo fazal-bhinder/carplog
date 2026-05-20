@@ -96,11 +96,13 @@ const Products = () => {
 
                 {/* Image */}
                 <div className="h-52 bg-surface-alt relative overflow-hidden">
-                  {product.imageUrl ? (
+                  {(product.thumbnailUrl || product.imageUrl) ? (
                     <img
-                      src={product.imageUrl.startsWith('http') ? product.imageUrl : `http://localhost:5001${product.imageUrl}`}
+                      src={(product.thumbnailUrl || product.imageUrl).startsWith('http') ? (product.thumbnailUrl || product.imageUrl) : `http://localhost:5001${product.thumbnailUrl || product.imageUrl}`}
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-muted gap-2">
